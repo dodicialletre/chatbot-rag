@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Leoncino Chatbot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div id="leoncino-widget">
+  <img src="{{ url_for('static', filename='img/leoncino.png') }}" class="leoncino-icon" alt="Leoncino">
+  <div class="speech-bubble">
+    <form id="chat-form">
+      <select id="model" name="model">
+        {% for ns in namespaces %}
+          <option value="{{ ns }}" {% if selected == ns %}selected{% endif %}>{{ ns }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" id="query" name="query" placeholder="Fai una domanda..." required>
+      <button type="submit">Chiedi</button>
+    </form>
+    {% if question %}
+      <div class="answer-area"><strong>Domanda:</strong> {{ question }}<br><strong>Risposta:</strong> {{ answer }}</div>
+    {% else %}
+      <div class="answer-area" id="answer"></div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.getElementById("chat-form").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const query = document.getElementById("query").value;
+  const model = document.getElementById("model").value;
+
+  const formData = new FormData();
+  formData.append("query", query);
+  formData.append("model", model);
+
+  const res = await fetch("/ask", {
+    method: "POST",
+    body: formData
+  });
+
+  const html = await res.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  const answer = doc.querySelector(".answer-area")?.innerHTML || "Risposta non trovata.";
+
+  document.querySelector(".answer-area").innerHTML = answer;
+});
+</script>
+
+</body>
+</html>
