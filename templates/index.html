@@ -39,6 +39,9 @@ document.getElementById("chat-form").addEventListener("submit", async function (
 
   const res = await fetch("/ask", {
     method: "POST",
+		headers: {
+			"Authorization": "Bearer 9e42f79a-5b10-4dc8-a9a8-1f238acc4c3f"
+    },
     body: formData
   });
 
