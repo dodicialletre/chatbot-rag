@@ -6,12 +6,15 @@ from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
 from openai import OpenAI
 from flask import jsonify
+from flask import abort
 
 # 🔹 Carica le variabili d'ambiente
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "quickstart")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+IS_PRODUCTION = os.getenv("RENDER", False)  # Questa variabile è impostata automaticamente da Render
 
 # 🔹 Inizializza Pinecone e modelli
 pc = Pinecone(api_key=PINECONE_API_KEY)
@@ -81,6 +84,14 @@ def index():
 # 🔹 Route per ricevere la domanda
 @app.route("/ask", methods=["POST"])
 def ask():
+
+    # Verifica token
+    # 🔐 Controlla token SOLO in produzione (Render)
+    if IS_PRODUCTION:
+        token = request.headers.get("Authorization")
+        if token != f"Bearer {ACCESS_TOKEN}":
+            abort(401, description="Unauthorized")
+
     query = request.form["query"]
     model = request.form["model"]
     namespaces = get_namespaces()
