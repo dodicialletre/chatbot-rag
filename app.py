@@ -7,6 +7,7 @@ from langchain_pinecone import PineconeVectorStore
 from openai import OpenAI
 from flask import jsonify
 from flask import abort
+from flask_cors import CORS
 
 # 🔹 Carica le variabili d'ambiente
 load_dotenv()
@@ -27,6 +28,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 # 🔹 Flask App
 app = Flask(__name__)
+CORS(app)  # <-- attiva CORS per tutte le rotte
 
 # Funzione per ottenere tutti i namespace presenti nell'indice
 def get_namespaces():
