@@ -106,6 +106,25 @@ def ask():
         answer = "Nessuna risposta trovata."
 		
     return render_template("index.html", question=query, answer=answer, namespaces=namespaces, selected=model)
+	
+@app.route("/api/ask", methods=["POST"])
+def ask_api():
+    if IS_PRODUCTION:
+        token = request.headers.get("Authorization")
+        if token != f"Bearer {ACCESS_TOKEN}":
+            abort(401, description="Unauthorized")
+
+    query = request.form["query"]
+    model = request.form["model"]
+
+    results = search_documents(query, model, score_threshold=0.75)
+
+    if results:
+        answer = generate_answer_with_context(query, results)
+    else:
+        answer = "Nessuna risposta trovata."
+
+    return jsonify({"answer": answer})
 
 if __name__ == "__main__":
     #app.run(debug=True)
